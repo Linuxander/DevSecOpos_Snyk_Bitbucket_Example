@@ -1,0 +1,82 @@
+image: node:[YOUR NODE VERSION HERE]
+
+definitions:
+  steps:
+
+    - step: &test_lint
+        name: Test Lint
+        caches:
+          - node
+        script:
+          [YOUR LINT SCRIPTS GOES HERE]
+
+    - step: &test_build
+        name: Test Build
+        caches:
+          - node
+        script:
+          [YOUR BUILD SCRIPTS GOES HERE]
+
+    - step: &snyk_security_scan
+        name: Snyk Security Scan # Vulnerability Scanning
+        caches:
+          - node
+        script:
+            - npm install -g snyk
+            - snyk auth $SNYK_TOKEN
+            - snyk monitor --org=$SNYK_ORG_ID --project-name=$SNYK_PROJECT_NAME --severity-threshold=low # Sends report to Snyk WebUI
+            - snyk test --org=$SNYK_ORG_ID --project-name=$SNYK_PROJECT_NAME --severity-threshold=low # Stops build if fails
+
+    - step: &deploy
+        name: Deploy
+        caches:
+          - node
+        script:
+          [YOUR DEPLOYMENT SCRIPTS GOES HERE]
+
+
+pipelines:
+
+  pull-requests:
+
+    feature/*:  
+      - step:
+          name: "Trigger | Pull Request: feature/*"
+          script:
+            - echo "Detected an active PULL REQUEST involving feature/* branches"
+      - step: *test_lint
+      - step: *test_build
+      - step: *snyk_security_scan
+
+    develop:
+      - step:
+          name: "Trigger | Pull Request: develop"
+          script:
+            - echo "Detected an active PULL REQUEST involving DEVELOP branch."
+      - step: *test_lint
+      - step: *test_build
+      - step: *snyk_security_scan
+
+  branches:
+
+    develop:
+      - step:
+          name: "Trigger | Merge: branch > develop"
+          script:
+            - echo "Detected a MERGE INTO DEVELOP branch."
+      - step: *test_lint
+      - step: *test_build
+      - step: *snyk_security_scan
+
+    main:
+      - step:
+          name: "Trigger | Merge: develop > main"
+          script:
+            - echo "Detected a MERGE INTO MAIN branch."
+      - step: *test_lint
+      - step: *test_build
+      - step: *snyk_security_scan
+      - step: *deploy
+
+caches:
+  node: node_modules
