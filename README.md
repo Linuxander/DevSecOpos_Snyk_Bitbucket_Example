@@ -103,6 +103,10 @@ Add the following step anywhere under your `pipelines:` section that you would l
 - step: *snyk_security_scan
 ```
 
+# Example File
+
+View this [bitbucket-pipelines.yml](https://github.com/Linuxander/DevSecOpos_Synk_Bitbucket_Example/blob/main/bitbucket-pipelines.yml) example which shows how it's supposed to look like in your environment.
+
 # Conclusion
 
 By implementing the above Snyk and Bitbucket configurations, you will be able to have your CI/CD pipeline run vulnerability checks against your code.  
